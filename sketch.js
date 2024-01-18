@@ -1,13 +1,19 @@
 let increase = 0.1;
 let scale = 20;
 let cols, rows;
+let fps = 24;
 
 let offsetZ = 0;
+
+let particles = []
 
 function setup() {
   createCanvas(400, 400);
   cols = floor(width / scale)
   rows = floor(height / scale)
+  frameRate(fps)
+
+  particles[0] = new particle();
 }
 
 function draw() {
@@ -31,5 +37,35 @@ function draw() {
     }
     offsetY += increase
     offsetZ += increase
+  }
+  particle[0].show();
+  particle[0].update();
+}
+
+
+
+
+class particle {
+  constructor() {
+  this.pos = createVector(0,0);
+  this.vel = createVector(0,0);
+  this.acc = createVector(0,0);
+  }
+
+  update() {
+      this.vel.add(this.acc);
+      this.pos.add(this.vel);
+      this.acc.mult(0);
+  }
+
+
+  applyForce(force) {
+      this.acc.add(force)
+
+  }
+
+  display() {
+      stroke(0);
+      point(this.pos.x,this.pos.y);
   }
 }
