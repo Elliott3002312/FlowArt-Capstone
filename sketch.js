@@ -1,71 +1,100 @@
-let increase = 0.1;
-let scale = 20;
-let cols, rows;
-let fps = 24;
+var increase = 0.1;
+var scl = 20;
+var cols, rows;
 
-let offsetZ = 0;
+var offsetZ = 0;
 
-let particles = []
+var fr;
+
+var array = [];
+
+var flowfield;
 
 function setup() {
   createCanvas(400, 400);
-  cols = floor(width / scale)
-  rows = floor(height / scale)
-  frameRate(fps)
-
-  particles[0] = new particle();
+  background(255);
+  cols = floor(width / scl)
+  rows = floor(height / scl)
+  fr = createP('');
+  
+  flowfield = new Array(cols * rows);
+  
+  for (var i = 0; i < 200; i++) {
+    array[i] = new particle()
+  }
 }
 
 function draw() {
-  background(255);
   var offsetY = 0;
-  for (let y = 0; y < height; y++) {
+  for (var y = 0; y < rows; y++) {
     let offsetX = 0;
-    for (let x = 0; x < width; x++) {
-      let index = (x + y * width) * 4;
-      let angle = noise(offsetX, offsetY, offsetZ) * TWO_PI;
-      let vector = p5.Vector.fromAngle(angle);
+    for (var x = 0; x < cols; x++) {
+      var index = x + y * cols;
+      var angle = noise(offsetX, offsetY, offsetZ) * TWO_PI  * 4;
+      var vector = p5.Vector.fromAngle(angle);
+      vector.setMag(1);
+      flowfield[index] = vector;
       offsetX += increase;
-      stroke(0)
-      push();
-      translate(x * scale, y * scale);
-      rotate(vector.heading());
-      line(0,0,scale,0);
+      stroke(0,50)
+//       push();
+//       translate(x * scl, y * scl);
+//       rotate(vector.heading());
+//       strokeWeight(1)
+//       line(0,0,scl,0);
       
-      pop();
-      //rect(x * scale, y * scale, scale,scale)
+//       pop();
     }
     offsetY += increase
-    offsetZ += increase
+    offsetZ += 0.0003;
   }
-  particle[0].show();
-  particle[0].update();
+  for (var i = 0; i < array.length; i++) {
+    array[i].follow(flowfield);
+    array[i].update()
+    array[i].edges()
+    array[i].show()
+  }
+  
+  fr.html(floor(frameRate()))
 }
 
-
-
-
-class particle {
-  constructor() {
-  this.pos = createVector(0,0);
-  this.vel = createVector(0,0);
-  this.acc = createVector(0,0);
+function particle() {
+  this.pos = createVector(random(width),random(height))
+  this.vel = createVector(0,0)
+  this.acc = createVector(0,0)
+  this.maxspeed = 1;
+  
+  this.prevPos = this.pos.copy();
+  
+  this.update = function() {
+    this.vel.add(this.acc);
+    this.vel.limit(this.maxspeed);
+    this.pos.add(this.vel);
+    this.acc.mult(0);
   }
-
-  update() {
-      this.vel.add(this.acc);
-      this.pos.add(this.vel);
-      this.acc.mult(0);
+  
+  this.follow = function(vectors) {
+    var x = floor(this.pos.x / scl);
+    var y = floor(this.pos.y / scl);
+    var index = x + y * cols;
+    var force = vectors[index];
+    this.applyForce(force);
   }
-
-
-  applyForce(force) {
-      this.acc.add(force)
-
+  
+  this.applyForce = function(force) {
+    this.acc.add(force);
   }
-
-  display() {
-      stroke(0);
-      point(this.pos.x,this.pos.y);
+  
+  this.show = function() {
+    strokeWeight(1)
+    stroke(0, 5);
+    line(this.pos.x, this.pos.y, this.prevPos.x,this.prevPos.y)
+    //point(this.pos.x, this.pos.y);
+  }
+  
+  this.edges = function() {
+    if (this.pos.x > width) this.pos.x = 0;
+    if (this.pos.x < 0) this.pos.x = width;
+    if (this.pos.y > height) this.pos.y = 0;
+    if (this.pos.y < 0) this.pos.y = height;
   }
 }
