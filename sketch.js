@@ -1,3 +1,6 @@
+//CITED SOURCES: https://www.youtube.com/watch?v=BjoM9oKOAKY&t=1737s
+//Coding train video that teaches how to create art using perlin noise, and a flow field.
+
 var increase = 0.1;
 var scl = 20;
 var cols, rows;
@@ -12,7 +15,7 @@ var flowfield;
 
 function setup() {
   createCanvas(400, 400);
-  background(255);
+  background(0);
   cols = floor(width / scl)
   rows = floor(height / scl)
   fr = createP('');
@@ -36,13 +39,6 @@ function draw() {
       flowfield[index] = vector;
       offsetX += increase;
       stroke(0,50)
-//       push();
-//       translate(x * scl, y * scl);
-//       rotate(vector.heading());
-//       strokeWeight(1)
-//       line(0,0,scl,0);
-      
-//       pop();
     }
     offsetY += increase
     offsetZ += 0.0003;
@@ -61,7 +57,7 @@ function particle() {
   this.pos = createVector(random(width),random(height))
   this.vel = createVector(0,0)
   this.acc = createVector(0,0)
-  this.maxspeed = 1;
+  this.maxspeed = 4;
   
   this.prevPos = this.pos.copy();
   
@@ -86,15 +82,33 @@ function particle() {
   
   this.show = function() {
     strokeWeight(1)
-    stroke(0, 5);
+    stroke(255, 5);
     line(this.pos.x, this.pos.y, this.prevPos.x,this.prevPos.y)
     //point(this.pos.x, this.pos.y);
+    this.updatePrev();
+  }
+  
+  this.updatePrev = function() {
+    this.prevPos.x = this.pos.x
+    this.prevPos.y = this.pos.y
   }
   
   this.edges = function() {
-    if (this.pos.x > width) this.pos.x = 0;
-    if (this.pos.x < 0) this.pos.x = width;
-    if (this.pos.y > height) this.pos.y = 0;
-    if (this.pos.y < 0) this.pos.y = height;
+    if (this.pos.x > width) {
+      this.pos.x = 0;
+      this.updatePrev();
+    }
+    if (this.pos.x < 0) {
+      this.pos.x = width;
+      this.updatePrev();
+    }
+    if (this.pos.y > height) {
+      this.pos.y = 0;
+      this.updatePrev();
+    }
+    if (this.pos.y < 0) {
+      this.pos.y = height;
+      this.updatePrev();
+    }
   }
 }
