@@ -4,6 +4,11 @@
 var increase = 0.1;
 var scl = 20;
 var cols, rows;
+let alpha = 0;
+let Addalpha = 0.5;
+let run = true;
+let rSlider,gSlider,bSlider,r,g,b;
+let fadeCheck = false;
 
 var offsetZ = 0;
 
@@ -14,21 +19,44 @@ var array = [];
 var flowfield;
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(600, 700);
   background(0);
   cols = floor(width / scl)
-  rows = floor(height / scl)
+  rows = floor(600 / scl)
   fr = createP('');
   
   flowfield = new Array(cols * rows);
   
-  for (var i = 0; i < 200; i++) {
+  for (var i = 0; i < 400; i++) {
     array[i] = new particle()
   }
+  rSlider = createSlider(0,255,255)
+  gSlider = createSlider(0,255,255)
+  bSlider = createSlider(0,255,255)
+  rSlider.position(20,640)
+  gSlider.position(240,640)
+  bSlider.position(440,640)
 }
 
 function draw() {
   var offsetY = 0;
+  fill(150); 
+  rect(0,600,width,100)
+  textSize(20)
+  fill(0)
+  r = rSlider.value()
+  text('Red: ' + r,45,660,120,50)
+  g = gSlider.value()
+  text('Green: ' + g,255,660,120,50)
+  b = bSlider.value()
+  text('Blue: ' + b,465,660,120,50)
+  
+  textSize(15)
+  text('Press spacebar to clear the canvas, and escape to pause/unpause the drawing!',0,620)
+  text('You can only clear if the drawing is paused.',0, 635)
+  
+  
+  if (run) {
   for (var y = 0; y < rows; y++) {
     let offsetX = 0;
     for (var x = 0; x < cols; x++) {
@@ -48,13 +76,17 @@ function draw() {
     array[i].update()
     array[i].edges()
     array[i].show()
+    }
+    
+  } else if (fadeCheck == true) {
+    fade()
   }
   
   fr.html(floor(frameRate()))
 }
 
 function particle() {
-  this.pos = createVector(random(width),random(height))
+  this.pos = createVector(random(width),random(600))
   this.vel = createVector(0,0)
   this.acc = createVector(0,0)
   this.maxspeed = 4;
@@ -82,7 +114,7 @@ function particle() {
   
   this.show = function() {
     strokeWeight(1)
-    stroke(255, 5);
+    stroke(r,g,b, 5);
     line(this.pos.x, this.pos.y, this.prevPos.x,this.prevPos.y)
     //point(this.pos.x, this.pos.y);
     this.updatePrev();
@@ -102,13 +134,34 @@ function particle() {
       this.pos.x = width;
       this.updatePrev();
     }
-    if (this.pos.y > height) {
+    if (this.pos.y > 600) {
       this.pos.y = 0;
       this.updatePrev();
     }
     if (this.pos.y < 0) {
-      this.pos.y = height;
+      this.pos.y = 600;
       this.updatePrev();
     }
+  }
+}
+
+function fade() {
+  if (run == false); {
+    if (alpha < 265) {
+      alpha += Addalpha;
+    }
+    fill(0,alpha)
+    rect(0,0,600,600)
+  }
+}
+
+function keyPressed() {
+  if (keyCode == 27 && run == true) {
+    run = false;
+  } else if (keyCode == 27 && run == false) {
+    run = true;
+    fadeCheck = false;
+  } else if (keyCode == 32 && run == false) {
+    fadeCheck = true;
   }
 }
